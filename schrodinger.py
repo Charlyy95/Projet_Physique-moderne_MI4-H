@@ -10,39 +10,38 @@ hbar = 1.0
 m = 1.0
 
 # Espace
-x_min, x_max = -30.0, 30.0
-N = 1500                       # nombre de x 
-x = np.linspace(x_min, x_max, N)
+N = 1500
+x = np.linspace(-30, 30, N)
 dx = x[1] - x[0]
 
 # Temps
 dt = 0.005
-Nt = 2000                      # nombre total de pas de temps
+Nt = 2000
 
 # Paquet d'ondes
-x0 = -15.0                     # position initiale paquet
+x0 = -15.0
 sigma = 1.5                    # largeur du paquet
-k0 = 5.0                       # vecteur d'onde
+k0 = 5.0
 
 # barriere potentiel
 V0 = 13
 a_barriere, b_barriere = 0.0, 1.0
-epaisseur = a_barriere - b_barriere
+epaisseur = b_barriere - a_barriere
 
 # Ec paquet
 E_moyenne = (hbar**2 * k0**2) / (2*m)       # de Broglie : p = hbar k
 print(f"Énergie cinétique moyenne du paquet : E = {E_moyenne:.2f}")
 print(f"Hauteur de la barrière : V0 = {V0}")
 if V0 > E_moyenne:
-    print("V0 > E : Physique Classique : l'onde ne passe pas, Physique quantique : on observe l'effet tunnel.")
+    print("V0 > E : Effet tunnel observable")
 else:
-    print("V0 < E : Physique Classique : une partie de l'onde va traverser")
+    print("V0 < E : Transmission classique")
 
 
 # ----------------------Paquet Gauss initial--------------------------- (partie 2)
 
 def paquet_gaussien(x, x0, sigma, k0):
-    """Paquet d'ondes gaussien normalisé, de vecteur d'onde moyen k0."""
+
     morceau1 = (2*np.pi*sigma**2)**(-0.25)      #normalisation
     morceau2 = np.exp(-(x - x0)**2 / (4*sigma**2))
     morceau3 = np.exp(1j*k0*x)
@@ -82,6 +81,4 @@ for n in range(Nt):
 norme_finale = np.sum(np.abs(psi)**2) * dx # verif de la condition de normalisation si = 1, la particule est bien conservée tout le long
 
 print(f"Norme finale du paquet d'ondes : {norme_finale:.6f} ( = 1 ?)")  # la norme est stable jusqu'à 10^-12
-
-
 

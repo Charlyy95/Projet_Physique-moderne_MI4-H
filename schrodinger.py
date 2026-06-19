@@ -25,7 +25,8 @@ k0 = 5.0
 
 # barriere potentiel
 V0 = 13
-a_barriere, b_barriere = 0.0, 1.0
+a_barriere = 0.0
+b_barriere = 1
 epaisseur = b_barriere - a_barriere
 
 # Ec paquet
@@ -82,3 +83,37 @@ norme_finale = np.sum(np.abs(psi)**2) * dx # verif de la condition de normalisat
 
 print(f"Norme finale du paquet d'ondes : {norme_finale:.6f} ( = 1 ?)")  # la norme est stable jusqu'à 10^-12
 
+
+
+# ----------------------Animation---------------------------
+
+fig, ax = plt.subplots(figsize=(9, 5))
+ax.set_xlim(-30, 30)
+ax.set_ylim(0, 1.15 * densite_proba.max())
+
+ax.plot(x, V, color="gray", label="barrière de potentiel")
+ax.axvspan(a_barriere, b_barriere, alpha=0.15)
+
+ligne, = ax.plot([], [], lw=2, color="red", label=r"$|\psi(x,t)|^2$")
+
+ax.set_xlabel("position : x")
+ax.set_ylabel(r"densité de probabilité : $|\psi(x,t)|^2$")
+ax.set_title("Paquet d'ondes Gaussien qui rencontre une barrière de potentiel")
+ax.legend(loc="upper right")
+
+def init():
+    ligne.set_data([], [])
+    return ligne,
+
+def update(frame):
+    ligne.set_data(x, densite_proba[frame])
+    return ligne,
+
+pas_affichage = 4                   # On n'affiche pas toutes les frames sinon trop lent
+ani = animation.FuncAnimation(
+    fig, update, frames=range(0, Nt, pas_affichage),
+    init_func=init, interval=20
+)
+
+plt.show()
+ani.save("paquetGauss_barriere.gif", writer='pillow', fps=30)

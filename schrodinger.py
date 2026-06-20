@@ -206,3 +206,54 @@ if(temps_b_transmis is not None):
     tau_t_num = tau0_num + temps_b_transmis - temps_a_transmis #On calcule le decalage avec et sans barrière
     print("\nTemps de franchissement de la barrère")
     print(f"tau_t,num = {tau_t_num:.4f} s")
+
+#---------------------- Exercice 2 ----------------------
+
+V0_2 = 8
+V_2 = np.where((x >= a_barriere) & (x <= b_barriere), V0_2, 0.0)
+diag_2 = 2*coef + V_2
+
+E_2 = diags([diag_supp_inf, diag_2, diag_supp_inf], offsets=[-1, 0, 1])
+
+I = identity(N)
+A_2 = (I + 1j*dt/(2*hbar) * E_2)       
+B_2 = (I - 1j*dt/(2*hbar) * E_2)
+
+psi_2 = psi0.copy()
+densite_2 = np.zeros((Nt, N))
+
+
+for n in range(Nt):
+    densite_2[n, :] = np.abs(psi_2)**2    
+    second_membre = B_2.dot(psi_2)     
+    psi_2 = spsolve(A_2, second_membre) 
+
+
+norme_finale_2 = np.sum(np.abs(psi_2)**2) 
+
+fig2, ax2 = plt.subplots(figsize=(9, 5))
+ax2.set_xlim(-30, 30)
+ax2.set_ylim(0, 1.15 * densite_2.max())
+
+ax2.plot(x, V_2, color="gray", label="barrière de potentiel")
+ax2.axvspan(a_barriere, b_barriere, alpha=0.15)
+
+ligne_2, = ax2.plot([], [], lw=2, color="red", label=r"$|\psi(x,t)|^2$")
+
+ax2.set_xlabel("position : x")
+ax2.set_ylabel(r"densité de probabilité : $|\psi(x,t)|^2$")
+ax2.set_title("Paquet d'ondes Gaussien qui rencontre une barrière de potentiel")
+ax2.legend(loc="upper right")
+
+def update_2(frame):
+    ligne_2.set_data(x, densite_2[frame])
+    return ligne_2,
+
+pas_affichage = 4                  
+ani_2 = animation.FuncAnimation(
+    fig2, update_2, frames=range(0, Nt, pas_affichage),
+    interval=20
+)
+
+ani_2.save("paquetGauss_barriere_E_sup_V.gif", writer="pillow", fps=30)
+plt.show()

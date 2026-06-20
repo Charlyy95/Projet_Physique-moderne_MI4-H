@@ -18,6 +18,8 @@ dx = x[1] - x[0]
 dt = 0.005
 Nt = 2000
 
+tab_temps = np.arange(Nt) * dt
+
 # Paquet d'ondes
 x0 = -15.0
 sigma = 1.5                    # largeur du paquet
@@ -116,4 +118,55 @@ ani = animation.FuncAnimation(
 )
 
 plt.show()
-ani.save("paquetGauss_barriere.gif", writer='pillow', fps=30)
+#ani.save("paquetGauss_barriere.gif", writer="pillow", fps=30)
+
+#---------------------- question b ----------------------
+
+def simu_libre():
+
+    coef = hbar**2 / (2*m*dx**2)
+    diag = 2*coef
+    diag_supp_inf = -coef * np.ones(N - 1)
+
+    E_libre = diags([diag_supp_inf, diag, diag_supp_inf], offsets=[-1, 0, 1])
+
+    I = identity(N)
+    A = (I + 1j*dt/(2*hbar) * E_libre)
+    B = (I - 1j*dt/(2*hbar) * E_libre)
+
+    # ----------------Evolution de psi-------------------- (partie 3)
+
+    psi = psi0.copy()
+    densite_proba = np.zeros((Nt, N))   # stock pour l'animation
+
+    for n in range(Nt):
+        densite_proba[n, :] = np.abs(psi)**2    #module carré pour la partie réelle
+        second_membre = B.dot(psi)      #B psi n (dot produit matriciel)
+        psi = spsolve(A, second_membre) #spsolve sert a determiner psi ()
+
+
+    norme_finale = np.sum(np.abs(psi)**2) * dx # verif de la condition de normalisation si = 1, la particule est bien conservée tout le long
+
+    print(f"Norme finale du paquet d'ondes : {norme_finale:.6f} ( = 1 ?)")  # la norme est stable jusqu'à 10^-12
+
+    return densite_proba
+
+def position_pic(densite_proba):
+    max = np.argmax(densite_proba, axis=1)
+    return x[max]
+
+def temps(x_pic, borne):
+    for i in range(len(x_pic)):
+        if x_pic[i] >= borne:
+            return tab_temps[i]
+    return None
+
+densite_libre = simu_libre()
+mon_pic = position_pic(densite_libre)
+
+temps_a = temps(mon_pic, a_barriere)
+temps_b = temps(mon_pic, b_barriere)
+tau0_num = temps_b - temps_a
+
+print(f"tau0,num = {tau0_num:.4f}")
+print(f"comparaison : a/v_g = {epaisseur/k0/m:.4f}")

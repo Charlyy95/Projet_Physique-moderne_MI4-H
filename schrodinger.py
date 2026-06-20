@@ -170,3 +170,39 @@ tau0_num = temps_b - temps_a
 
 print(f"tau0,num = {tau0_num:.4f}")
 print(f"comparaison : a/v_g = {epaisseur/k0/m:.4f}")
+
+
+#---------------------- question c ----------------------
+def max_onde_transmis(densite_proba,limite):
+    #On garde seulement le x de la fin de la barrière
+    indice_fin_barriere = np.searchsorted(x, limite)
+    position_max_transmis = np.full(Nt, np.nan)
+
+    #On garde seulement la densité d'après la barrière pour trouver la position du pic de l'onde transmise
+    for i in range(Nt):
+        apres_barriere = densite_proba[i, indice_fin_barriere:]
+        #On ignore tant que le paquet n'a pas franchit la barrière
+        if(np.max(apres_barriere) > 1e-3):
+            indice_max = np.argmax(apres_barriere)
+            position_max_transmis[i] = x[indice_fin_barriere+indice_max]
+        
+    return position_max_transmis
+
+def temps_barriere_atteint(x_pic, borne, tab_temps):
+    #On cherche le temps où l'onde à bien atteint la barrière
+    for i in range(len(x_pic)):
+        #On verifie que la case du tableau est bien définie
+        if(not np.isnan(x_pic[i]) and x_pic[i] > borne):
+            return tab_temps[i]
+    return None
+
+x_surete = b_barriere + 10 #Le x où on est sûr que l’onde a bien passé la barrière
+
+pic_transmis = max_onde_transmis(densite_proba, b_barriere)
+temps_b_transmis = temps_barriere_atteint(pic_transmis, x_surete, tab_temps)
+temps_a_transmis = temps(mon_pic, x_surete)
+
+if(temps_b_transmis is not None):
+    tau_t_num = tau0_num + temps_b_transmis - temps_a_transmis #On calcule le decalage avec et sans barrière
+    print("\nTemps de franchissement de la barrère")
+    print(f"tau_t,num = {tau_t_num:.4f} s")
